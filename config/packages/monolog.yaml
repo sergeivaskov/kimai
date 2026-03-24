@@ -44,6 +44,12 @@ when@dev:
                 path: "%kernel.logs_dir%/%kernel.environment%.log"
                 level: debug
                 formatter: monolog.formatter.kimai
+            ai_json_log:
+                type: stream
+                path: "%kernel.project_dir%/../../.cursor/logs/php-backend.jsonl"
+                level: debug
+                formatter: monolog.formatter.json
+                channels: ["!event", "!deprecation"]
             console:
                 type: console
                 process_psr_3_messages: false
