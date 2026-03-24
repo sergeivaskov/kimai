@@ -32,6 +32,10 @@ var/templates/
 /var/plugins*
 /var/plugins/*/*.disabled
 
+# AI Debug Logs
+.cursor/logs/
+*.jsonl
+
 ###> symfony/framework-bundle ###
 /.env.local
 /.env.local.php
