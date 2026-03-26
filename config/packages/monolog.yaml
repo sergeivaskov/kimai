@@ -1,71 +1,54 @@
-monolog:
-    channels: ["deprecation"]
-
 when@prod:
     monolog:
+        channels: ["deprecation"]
         handlers:
             main:
                 type: fingers_crossed
                 action_level: error
-                handler: file_log
-                excluded_http_codes:
-                    - {400: ['^/api/']}
-                    - {401: ['^/api/']}
-                    - 403
-                    - 404
-                    - {405: ['/homepage$', '/login_check$', '/export/data$']}
-                channels: ["!deprecation"]
-            file_log:
+                handler: nested
+                excluded_http_codes: [403, 404]
+            nested:
                 type: stream
                 level: info
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
-                formatter: monolog.formatter.kimai
+                path: php://stderr
             console:
                 type: console
                 process_psr_3_messages: false
-                channels: ["!event", "!doctrine", "!deprecation"]
+                channels: ["!event", "!doctrine"]
+            deprecation:
+                type: stream
+                channels: ["deprecation"]
+                path: php://stderr
 
 when@dev:
     monolog:
+        channels: ["deprecation"]
         handlers:
             main:
-                type: fingers_crossed
-                action_level: notice
-                handler: file_log
-                excluded_http_codes:
-                    - {400: ['^/api/']}
-                    - {401: ['^/api/']}
-                    - 403
-                    - 404
-                    - {405: ['/homepage$', '/login_check$', '/export/data$']}
-                channels: ["!event", "!deprecation"]
-            file_log:
                 type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
-                level: debug
-                formatter: monolog.formatter.kimai
-            ai_json_log:
+                path: php://stderr
+                level: info
+                channels: ["!event"]
+            jsonl_debug:
                 type: stream
-                path: "%kernel.project_dir%/../../.cursor/logs/php-backend.jsonl"
+                path: "/var/log/proofa/php-backend.jsonl"
                 level: debug
                 formatter: monolog.formatter.json
                 channels: ["!event", "!deprecation"]
             console:
                 type: console
                 process_psr_3_messages: false
-                channels: ["!event", "!doctrine", "!deprecation"]
+                channels: ["!event", "!doctrine", "!console"]
             deprecation:
                 type: stream
                 channels: ["deprecation"]
-                path: "%kernel.logs_dir%/deprecations.log"
-                formatter: monolog.formatter.deprecation
+                path: php://stderr
 
 when@test:
     monolog:
         handlers:
             main:
                 type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                path: php://stderr
                 level: info
                 channels: ["!event"]
-                formatter: monolog.formatter.kimai

@@ -13,11 +13,8 @@ doctrine:
                 # existing migrations will fail if the schema filter is activated
                 #schema_filter: ~^(?!(bundle_migration_|kimai2_sessions))~
                 url: '%env(DATABASE_URL)%'
-                driver: 'pdo_mysql'
-                charset: utf8mb4
-                default_table_options:
-                    charset: utf8mb4
-                    collation: utf8mb4_unicode_ci
+                driver: 'pdo_pgsql'
+                server_version: '15'
                 schema_manager_factory: doctrine.dbal.default_schema_manager_factory
 
         types:
