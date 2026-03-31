@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Log\Processor;
+namespace App\ProofaCoreBundle\Log\Processor;
 
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;

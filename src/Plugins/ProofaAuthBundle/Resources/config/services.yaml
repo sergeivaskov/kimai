@@ -1,0 +1,8 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\Plugins\ProofaAuthBundle\:
+        resource: '../../*'
+        exclude: '../../*/{DependencyInjection,Resources}'

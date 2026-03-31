@@ -33,6 +33,7 @@
         "easybill/zugferd-php": "^2.1",
         "endroid/qr-code": "^4.8",
         "erusev/parsedown": "^1.6",
+        "firebase/php-jwt": "^7.0",
         "friendsofsymfony/rest-bundle": "^3.0",
         "gedmo/doctrine-extensions": "^3.6",
         "horstoeko/zugferd": "^1.0",

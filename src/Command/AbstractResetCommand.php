@@ -71,8 +71,14 @@ abstract class AbstractResetCommand extends Command
             }
 
             try {
-                $command = $this->getApplication()->find('doctrine:migrations:migrate');
-                $cmdInput = new ArrayInput([]);
+                $command = $this->getApplication()->find('doctrine:schema:create');
+                $command->run(new ArrayInput([]), $output);
+
+                $command = $this->getApplication()->find('doctrine:migrations:sync-metadata-storage');
+                $command->run(new ArrayInput([]), $output);
+
+                $command = $this->getApplication()->find('doctrine:migrations:version');
+                $cmdInput = new ArrayInput(['--add' => true, '--all' => true]);
                 $cmdInput->setInteractive(false);
                 $command->run($cmdInput, $output);
             } catch (Exception $ex) {
