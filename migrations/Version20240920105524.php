@@ -27,7 +27,7 @@ final class Version20240920105524 extends AbstractMigration
         $ids = $this->connection->fetchFirstColumn("
 SELECT DISTINCT user_id
 FROM kimai2_user_preferences AS kp
-WHERE kp.value > 0
+WHERE CAST(kp.value AS INTEGER) > 0
   AND kp.name IN ('work_monday', 'work_tuesday', 'work_wednesday', 'work_thursday', 'work_friday', 'work_saturday', 'work_sunday')
   AND NOT EXISTS (
     SELECT 1
