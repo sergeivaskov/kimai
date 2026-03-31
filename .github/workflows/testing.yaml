@@ -17,11 +17,21 @@ jobs:
                 ports:
                     - 3306/tcp
                 options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+            postgres:
+                image: postgres:15-alpine
+                env:
+                    POSTGRES_USER: kimai
+                    POSTGRES_PASSWORD: kimai
+                    POSTGRES_DB: kimai
+                ports:
+                    - 5432/tcp
+                options: --health-cmd="pg_isready -U kimai" --health-interval=10s --health-timeout=5s --health-retries=5
         strategy:
             matrix:
                 php: ['8.1', '8.2', '8.3', '8.4', '8.5']
+                database: ['mysql', 'postgresql']
 
-        name: Integration (${{ matrix.php }})
+        name: Integration (${{ matrix.php }}, ${{ matrix.database }})
         steps:
 
             -   name: Clone Kimai
@@ -34,13 +44,19 @@ jobs:
                 with:
                     php-version: ${{ matrix.php }}
                     coverage: pcov
-                    extensions: ctype, gd, iconv, intl, ldap, mbstring, mysql, xml, zip
+                    extensions: ctype, gd, iconv, intl, ldap, mbstring, mysql, pgsql, xml, zip
                     tools: cs2pr, symfony-cli
                 env:
                     fail-fast: true
 
             -   name: Determine software versions
-                run: mysql --version && php --version
+                run: |
+                    if [ "${{ matrix.database }}" = "mysql" ]; then
+                        mysql --version
+                    else
+                        psql --version
+                    fi
+                    php --version
 
             -   name: Determine composer cache directory
                 id: composer-cache
@@ -82,7 +98,7 @@ jobs:
             -   name: Run quick unit-tests
                 run: composer tests-unit
                 env:
-                    DATABASE_URL: mysql://root:kimai@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/kimai?charset=utf8mb4&serverVersion=8.0.35
+                    DATABASE_URL: ${{ matrix.database == 'postgresql' && format('postgresql://kimai:kimai@127.0.0.1:{0}/kimai?serverVersion=15&charset=utf8', job.services.postgres.ports['5432']) || format('mysql://root:kimai@127.0.0.1:{0}/kimai?charset=utf8mb4&serverVersion=8.0.35', job.services.mysql.ports['3306']) }}
                     APP_ENV: test
                     MAILER_URL: null://localhost
 
@@ -90,7 +106,7 @@ jobs:
                 if: matrix.php != '8.5'
                 run: vendor/bin/phpunit tests/
                 env:
-                    DATABASE_URL: mysql://root:kimai@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/kimai?charset=utf8mb4&serverVersion=8.0.35
+                    DATABASE_URL: ${{ matrix.database == 'postgresql' && format('postgresql://kimai:kimai@127.0.0.1:{0}/kimai?serverVersion=15&charset=utf8', job.services.postgres.ports['5432']) || format('mysql://root:kimai@127.0.0.1:{0}/kimai?charset=utf8mb4&serverVersion=8.0.35', job.services.mysql.ports['3306']) }}
                     APP_ENV: test
                     MAILER_URL: null://localhost
 
@@ -98,7 +114,7 @@ jobs:
                 if: matrix.php == '8.5'
                 run: vendor/bin/phpunit tests/ --coverage-clover=coverage.xml
                 env:
-                    DATABASE_URL: mysql://root:kimai@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/kimai?charset=utf8mb4&serverVersion=8.0.35
+                    DATABASE_URL: ${{ matrix.database == 'postgresql' && format('postgresql://kimai:kimai@127.0.0.1:{0}/kimai?serverVersion=15&charset=utf8', job.services.postgres.ports['5432']) || format('mysql://root:kimai@127.0.0.1:{0}/kimai?charset=utf8mb4&serverVersion=8.0.35', job.services.mysql.ports['3306']) }}
                     APP_ENV: dev
                     MAILER_URL: null://localhost
 
@@ -110,14 +126,14 @@ jobs:
                     files: ./coverage.xml
                     fail_ci_if_error: true
 
-            -   name: Run migrations on MySQL
+            -   name: Run migrations on ${{ matrix.database }}
                 run: |
                     bin/console doctrine:database:drop --if-exists --force -n
                     bin/console doctrine:database:create --if-not-exists -n
                     bin/console doctrine:migrations:migrate -n
                     bin/console doctrine:migrations:migrate first -n
                 env:
-                    DATABASE_URL: mysql://root:kimai@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/kimai?charset=utf8mb4&serverVersion=8.0.35
+                    DATABASE_URL: ${{ matrix.database == 'postgresql' && format('postgresql://kimai:kimai@127.0.0.1:{0}/kimai?serverVersion=15&charset=utf8', job.services.postgres.ports['5432']) || format('mysql://root:kimai@127.0.0.1:{0}/kimai?charset=utf8mb4&serverVersion=8.0.35', job.services.mysql.ports['3306']) }}
                     APP_ENV: dev
                     MAILER_URL: null://localhost
 

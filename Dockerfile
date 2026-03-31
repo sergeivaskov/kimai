@@ -272,7 +272,7 @@ RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} >
 COPY .docker/dbtest.php /dbtest.php
 COPY .docker/entrypoint.sh /entrypoint.sh
 
-ENV DATABASE_URL="mysql://kimai:kimai@127.0.0.1:3306/kimai?charset=utf8mb4&serverVersion=8.3"
+ENV DATABASE_URL="postgresql://kimai:kimai@127.0.0.1:5432/kimai?serverVersion=15&charset=utf8"
 ENV APP_SECRET=change_this_to_something_unique
 # The default container name for nginx is nginx
 ENV TRUSTED_PROXIES=nginx,localhost,127.0.0.1

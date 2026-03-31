@@ -48,16 +48,19 @@ final class DsnParserFactory
 
         $options = $this->create()->parse($dsn);
 
-        $options = array_merge(
-            $options,
-            [
-                'charset' => 'utf8mb4',
-                'defaultTableOptions' => [
+        // Apply MySQL-specific charset/collation only for MySQL drivers
+        if (isset($options['driver']) && str_starts_with($options['driver'], 'pdo_mysql')) {
+            $options = array_merge(
+                $options,
+                [
                     'charset' => 'utf8mb4',
-                    'collation' => 'utf8mb4_unicode_ci',
+                    'defaultTableOptions' => [
+                        'charset' => 'utf8mb4',
+                        'collation' => 'utf8mb4_unicode_ci',
+                    ]
                 ]
-            ]
-        );
+            );
+        }
 
         return $options;
     }
