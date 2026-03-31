@@ -29,6 +29,11 @@ when@dev:
                 path: php://stderr
                 level: info
                 channels: ["!event"]
+            json_file:
+                type: stream
+                path: /var/log/proofa/php-backend.jsonl
+                level: debug
+                formatter: monolog.formatter.json
             console:
                 type: console
                 process_psr_3_messages: false
