@@ -9,19 +9,16 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class JwtUserProviderTest extends TestCase
 {
     private $entityManager;
-    private $requestStack;
     private $jwtuserprovider;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
-        $this->requestStack = $this->createMock(RequestStack::class);
-        $this->jwtuserprovider = new JwtUserProvider($this->entityManager, $this->requestStack);
+        $this->jwtuserprovider = new JwtUserProvider($this->entityManager);
     }
 
     public function testInitialization(): void

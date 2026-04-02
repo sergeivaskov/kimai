@@ -4,6 +4,7 @@ namespace App\Tests\Plugins\ProofaAuthBundle\Security;
 
 use PHPUnit\Framework\TestCase;
 use App\Plugins\ProofaAuthBundle\Security\JwtAuthenticator;
+use App\Plugins\ProofaAuthBundle\Security\JwtValidator;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,15 +19,19 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;
 
+use Psr\Log\LoggerInterface;
+
 class JwtAuthenticatorTest extends TestCase
 {
     private $jwtValidator;
+    private $logger;
     private $jwtauthenticator;
 
     protected function setUp(): void
     {
         $this->jwtValidator = $this->createMock(JwtValidator::class);
-        $this->jwtauthenticator = new JwtAuthenticator($this->jwtValidator);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->jwtauthenticator = new JwtAuthenticator($this->jwtValidator, $this->logger);
     }
 
     public function testInitialization(): void

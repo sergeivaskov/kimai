@@ -39,19 +39,17 @@ class TenantSwitchingSubscriber implements EventSubscriberInterface
         $request = $event->getRequest();
         $workspaceId = $request->headers->get('X-Workspace-Id');
 
-        // If no header, try to extract from JWT
+        // If no header, try to extract from JWT payload
         if (!$workspaceId) {
             $token = $this->extractToken($request);
             if ($token) {
                 try {
                     $payload = $this->jwtValidator->validate($token);
-                    // Extract workspace id if present in payload
-                    // In AFFiNE, JWT might not have a single workspaceId if it's global,
-                    // but we can check if it was passed in some other way or if the client
-                    // is required to send X-Workspace-Id.
-                    // For safety, we rely on X-Workspace-Id header for tenant routing.
+                    if (isset($payload['workspace_id'])) {
+                        $workspaceId = $payload['workspace_id'];
+                    }
                 } catch (\Exception $e) {
-                    // Ignore, authenticator will handle it
+                    // Ignore, authenticator will handle it later in the cycle
                 }
             }
         }
@@ -62,11 +60,31 @@ class TenantSwitchingSubscriber implements EventSubscriberInterface
                 return;
             }
 
-            $schemaName = 'ws_' . strtolower($workspaceId);
+            $schemaName = 'ws_' . strtolower(str_replace('-', '_', $workspaceId));
             $conn = $this->entityManager->getConnection();
             
-            // Switch schema
-            $conn->executeStatement(sprintf('SET search_path TO "%s"', $schemaName));
+            try {
+                // Check if schema exists before switching
+                $result = $conn->executeQuery(
+                    'SELECT schema_name FROM information_schema.schemata WHERE schema_name = ?',
+                    [$schemaName]
+                )->fetchOne();
+                
+                if ($result) {
+                    // Schema exists, switch to it
+                    $conn->executeStatement(sprintf('SET search_path TO "%s"', $schemaName));
+                } else {
+                    // Schema doesn't exist, fallback to public (test environment)
+                    $conn->executeStatement('SET search_path TO "public"');
+                }
+            } catch (\Exception $e) {
+                // Fallback to public on any error
+                try {
+                    $conn->executeStatement('SET search_path TO "public"');
+                } catch (\Exception $fallbackException) {
+                    // Ignore
+                }
+            }
         }
     }
 

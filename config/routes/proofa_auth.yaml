@@ -1,0 +1,3 @@
+proofa_auth_controllers:
+    resource: ../../src/Plugins/ProofaAuthBundle/Controller/
+    type: attribute

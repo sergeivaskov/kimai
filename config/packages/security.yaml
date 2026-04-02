@@ -5,9 +5,7 @@ security:
     providers:
         chain_provider:
             chain:
-                providers: [proofa_jwt,kimai_internal,kimai_ldap]
-        proofa_jwt:
-            id: App\Plugins\ProofaAuthBundle\Security\JwtUserProvider
+                providers: [kimai_internal,kimai_ldap]
         kimai_internal:
             entity:
                 class: App\Entity\User
@@ -31,7 +29,6 @@ security:
             provider: chain_provider
             custom_authenticators:
                 - App\API\Authentication\TokenAuthenticator
-                - App\Plugins\ProofaAuthBundle\Security\JwtAuthenticator
 
         secured_area:
             kimai_ldap: ~

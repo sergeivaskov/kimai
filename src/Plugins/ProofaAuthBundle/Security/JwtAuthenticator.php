@@ -16,18 +16,29 @@ use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;
 
+use Psr\Log\LoggerInterface;
+
 class JwtAuthenticator extends AbstractAuthenticator
 {
     private JwtValidator $jwtValidator;
+    private LoggerInterface $logger;
 
-    public function __construct(JwtValidator $jwtValidator)
+    public function __construct(JwtValidator $jwtValidator, LoggerInterface $logger)
     {
         $this->jwtValidator = $jwtValidator;
+        $this->logger = $logger;
     }
 
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has('Authorization') || $request->cookies->has('access_token');
+        $token = $this->extractToken($request);
+        if (!$token) {
+            return false;
+        }
+
+        // Only support if it looks like a JWT (3 parts separated by dots)
+        // This prevents intercepting native Kimai API tokens
+        return substr_count($token, '.') === 2;
     }
 
     public function authenticate(Request $request): Passport
@@ -49,7 +60,7 @@ class JwtAuthenticator extends AbstractAuthenticator
         } catch (\UnexpectedValueException $e) {
             throw new CustomUserMessageAuthenticationException($e->getMessage());
         } catch (\Exception $e) {
-            throw new CustomUserMessageAuthenticationException('Invalid JWT token');
+            throw new CustomUserMessageAuthenticationException('Invalid JWT token: ' . $e->getMessage());
         }
 
         $userId = $payload['sub'] ?? null;
@@ -66,11 +77,25 @@ class JwtAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        $user = $token->getUser();
+        $this->logger->info('JWT Authentication success', [
+            'event' => 'login_success',
+            'user_id' => $user ? $user->getUserIdentifier() : 'unknown',
+            'ip' => $request->getClientIp(),
+            'user_agent' => $request->headers->get('User-Agent')
+        ]);
         return null;
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+        $this->logger->warning('JWT Authentication failed', [
+            'event' => 'invalid_jwt',
+            'reason' => strtr($exception->getMessageKey(), $exception->getMessageData()),
+            'ip' => $request->getClientIp(),
+            'user_agent' => $request->headers->get('User-Agent')
+        ]);
+
         $data = [
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
         ];

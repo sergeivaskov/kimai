@@ -12,11 +12,10 @@ class JwtValidator
 
     public function __construct(ParameterBagInterface $params)
     {
-        // In a real app, this should be loaded from env vars
-        // We'll use the same default secret as AFFiNE for dev
-        $this->secretKey = $params->has('affine_jwt_secret') 
-            ? $params->get('affine_jwt_secret') 
-            : 'default_secret_key_for_development_only';
+        // Priority: ENV var > Symfony parameter > default fallback
+        $this->secretKey = $_ENV['AFFINE_JWT_SECRET'] 
+            ?? ($params->has('affine_jwt_secret') ? $params->get('affine_jwt_secret') : null)
+            ?? 'test-secret-key-minimum-32-bytes-long-for-hs256-algorithm-needs-at-least-256-bits';
     }
 
     public function validate(string $token): array
@@ -31,6 +30,14 @@ class JwtValidator
 
         if (!isset($payload['aud']) || $payload['aud'] !== 'proofa-services') {
             throw new \UnexpectedValueException('Invalid JWT audience');
+        }
+
+        if (!isset($payload['sub'])) {
+            throw new \UnexpectedValueException('Invalid JWT: missing sub (user id)');
+        }
+
+        if (!isset($payload['email'])) {
+            throw new \UnexpectedValueException('Invalid JWT: missing email');
         }
 
         return $payload;
