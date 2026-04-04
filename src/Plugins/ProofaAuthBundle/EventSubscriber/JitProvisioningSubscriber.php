@@ -21,7 +21,7 @@ class JitProvisioningSubscriber implements EventSubscriberInterface
     {
         return [
             // Priority 10: runs after TenantSwitchingSubscriber (256) but before Authenticator (8)
-            KernelEvents::REQUEST => ['onKernelRequest', 10],
+            KernelEvents::REQUEST => ['onKernelRequest', 2],
         ];
     }
 

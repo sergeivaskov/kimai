@@ -1,0 +1,9 @@
+App\Entity\Project:
+  type: entity
+  fields:
+    affineId:
+      type: string
+      length: 255
+      nullable: true
+      unique: true
+      column: affine_id

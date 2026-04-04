@@ -68,6 +68,10 @@ class JwtAuthenticator extends AbstractAuthenticator
             throw new CustomUserMessageAuthenticationException('Invalid JWT payload: missing sub');
         }
 
+        if (isset($payload['workspace_id'])) {
+            $request->attributes->set('workspace_id', $payload['workspace_id']);
+        }
+
         // We will pass the payload to the UserProvider via a custom identifier
         // Format: affine_id|json_encoded_payload
         $identifier = $userId . '|' . json_encode($payload);

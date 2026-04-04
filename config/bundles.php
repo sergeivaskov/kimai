@@ -21,4 +21,5 @@ return [
     Scheb\TwoFactorBundle\SchebTwoFactorBundle::class => ['all' => true],
     App\Plugins\ProofaAuthBundle\ProofaAuthBundle::class => ['all' => true],
     App\ProofaCoreBundle\ProofaCoreBundle::class => ['all' => true],
+    App\ProofaMultiTenantBundle\ProofaMultiTenantBundle::class => ['all' => true],
 ];

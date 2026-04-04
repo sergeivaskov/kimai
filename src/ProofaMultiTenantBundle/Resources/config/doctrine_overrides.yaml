@@ -1,0 +1,9 @@
+doctrine:
+  orm:
+    mappings:
+      ProofaMultiTenantOverrides:
+        is_bundle: false
+        type: yml
+        dir: '%kernel.project_dir%/src/ProofaMultiTenantBundle/Resources/config/doctrine_overrides'
+        prefix: 'App\Entity'
+        alias: App

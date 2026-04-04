@@ -1,0 +1,3 @@
+proofa_multi_tenant:
+    resource: '@ProofaMultiTenantBundle/Controller/'
+    type: attribute

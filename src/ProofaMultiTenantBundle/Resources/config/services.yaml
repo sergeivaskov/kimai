@@ -1,0 +1,18 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  Doctrine\Migrations\DependencyFactory:
+    alias: doctrine.migrations.dependency_factory
+
+  App\ProofaMultiTenantBundle\:
+    resource: '../../*'
+    exclude:
+      - '../../DependencyInjection/'
+      - '../../Entity/'
+      - '../../ProofaMultiTenantBundle.php'
+
+  App\ProofaMultiTenantBundle\Service\TenantProvisioningService:
+    arguments:
+      $dependencyFactory: '@doctrine.migrations.dependency_factory'
