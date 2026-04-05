@@ -18,7 +18,7 @@ final class Version20260404120000 extends AbstractMigration
     {
         // Create table in public schema
         $this->addSql('
-            CREATE TABLE public.proofa_tenant_schemas (
+            CREATE TABLE IF NOT EXISTS public.proofa_tenant_schemas (
                 workspace_id VARCHAR(255) PRIMARY KEY,
                 schema_name VARCHAR(255) UNIQUE NOT NULL,
                 status VARCHAR(50) NOT NULL,
@@ -37,6 +37,7 @@ final class Version20260404120000 extends AbstractMigration
                 NOW() 
             FROM information_schema.schemata 
             WHERE schema_name LIKE 'ws_%'
+            ON CONFLICT (workspace_id) DO NOTHING
         ");
     }
 
